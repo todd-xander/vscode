@@ -9,40 +9,40 @@ import { IDisposable } from 'vs/base/common/lifecycle';
 import { Position } from 'vs/editor/common/core/position';
 import * as languages from 'vs/editor/common/languages';
 
-export class CodeActionKind {
+export class ActionKind {
 	private static readonly sep = '.';
 
-	public static readonly None = new CodeActionKind('@@none@@'); // Special code action that contains nothing
-	public static readonly Empty = new CodeActionKind('');
-	public static readonly QuickFix = new CodeActionKind('quickfix');
-	public static readonly Refactor = new CodeActionKind('refactor');
-	public static readonly RefactorExtract = CodeActionKind.Refactor.append('extract');
-	public static readonly RefactorInline = CodeActionKind.Refactor.append('inline');
-	public static readonly RefactorMove = CodeActionKind.Refactor.append('move');
-	public static readonly RefactorRewrite = CodeActionKind.Refactor.append('rewrite');
-	public static readonly Source = new CodeActionKind('source');
-	public static readonly SourceOrganizeImports = CodeActionKind.Source.append('organizeImports');
-	public static readonly SourceFixAll = CodeActionKind.Source.append('fixAll');
-	public static readonly SurroundWith = CodeActionKind.Refactor.append('surround');
+	public static readonly None = new ActionKind('@@none@@'); // Special code action that contains nothing
+	public static readonly Empty = new ActionKind('');
+	public static readonly QuickFix = new ActionKind('quickfix');
+	public static readonly Refactor = new ActionKind('refactor');
+	public static readonly RefactorExtract = ActionKind.Refactor.append('extract');
+	public static readonly RefactorInline = ActionKind.Refactor.append('inline');
+	public static readonly RefactorMove = ActionKind.Refactor.append('move');
+	public static readonly RefactorRewrite = ActionKind.Refactor.append('rewrite');
+	public static readonly Source = new ActionKind('source');
+	public static readonly SourceOrganizeImports = ActionKind.Source.append('organizeImports');
+	public static readonly SourceFixAll = ActionKind.Source.append('fixAll');
+	public static readonly SurroundWith = ActionKind.Refactor.append('surround');
 
 	constructor(
 		public readonly value: string
 	) { }
 
-	public equals(other: CodeActionKind): boolean {
+	public equals(other: ActionKind): boolean {
 		return this.value === other.value;
 	}
 
-	public contains(other: CodeActionKind): boolean {
-		return this.equals(other) || this.value === '' || other.value.startsWith(this.value + CodeActionKind.sep);
+	public contains(other: ActionKind): boolean {
+		return this.equals(other) || this.value === '' || other.value.startsWith(this.value + ActionKind.sep);
 	}
 
-	public intersects(other: CodeActionKind): boolean {
+	public intersects(other: ActionKind): boolean {
 		return this.contains(other) || other.contains(this);
 	}
 
-	public append(part: string): CodeActionKind {
-		return new CodeActionKind(this.value + CodeActionKind.sep + part);
+	public append(part: string): ActionKind {
+		return new ActionKind(this.value + ActionKind.sep + part);
 	}
 }
 
@@ -68,13 +68,13 @@ export enum CodeActionTriggerSource {
 }
 
 export interface CodeActionFilter {
-	readonly include?: CodeActionKind;
-	readonly excludes?: readonly CodeActionKind[];
+	readonly include?: ActionKind;
+	readonly excludes?: readonly ActionKind[];
 	readonly includeSourceActions?: boolean;
 	readonly onlyIncludePreferredActions?: boolean;
 }
 
-export function mayIncludeActionsOfKind(filter: CodeActionFilter, providedKind: CodeActionKind): boolean {
+export function mayIncludeActionsOfKind(filter: CodeActionFilter, providedKind: ActionKind): boolean {
 	// A provided kind may be a subset or superset of our filtered kind.
 	if (filter.include && !filter.include.intersects(providedKind)) {
 		return false;
@@ -87,7 +87,7 @@ export function mayIncludeActionsOfKind(filter: CodeActionFilter, providedKind: 
 	}
 
 	// Don't return source actions unless they are explicitly requested
-	if (!filter.includeSourceActions && CodeActionKind.Source.contains(providedKind)) {
+	if (!filter.includeSourceActions && ActionKind.Source.contains(providedKind)) {
 		return false;
 	}
 
@@ -95,7 +95,7 @@ export function mayIncludeActionsOfKind(filter: CodeActionFilter, providedKind: 
 }
 
 export function filtersAction(filter: CodeActionFilter, action: languages.CodeAction): boolean {
-	const actionKind = action.kind ? new CodeActionKind(action.kind) : undefined;
+	const actionKind = action.kind ? new ActionKind(action.kind) : undefined;
 
 	// Filter out actions by kind
 	if (filter.include) {
@@ -112,7 +112,7 @@ export function filtersAction(filter: CodeActionFilter, action: languages.CodeAc
 
 	// Don't return source actions unless they are explicitly requested
 	if (!filter.includeSourceActions) {
-		if (actionKind && CodeActionKind.Source.contains(actionKind)) {
+		if (actionKind && ActionKind.Source.contains(actionKind)) {
 			return false;
 		}
 	}
@@ -126,7 +126,7 @@ export function filtersAction(filter: CodeActionFilter, action: languages.CodeAc
 	return true;
 }
 
-function excludesAction(providedKind: CodeActionKind, exclude: CodeActionKind, include: CodeActionKind | undefined): boolean {
+function excludesAction(providedKind: ActionKind, exclude: ActionKind, include: ActionKind | undefined): boolean {
 	if (!exclude.contains(providedKind)) {
 		return false;
 	}
@@ -150,7 +150,7 @@ export interface CodeActionTrigger {
 }
 
 export class CodeActionCommandArgs {
-	public static fromUser(arg: any, defaults: { kind: CodeActionKind; apply: CodeActionAutoApply }): CodeActionCommandArgs {
+	public static fromUser(arg: any, defaults: { kind: ActionKind; apply: CodeActionAutoApply }): CodeActionCommandArgs {
 		if (!arg || typeof arg !== 'object') {
 			return new CodeActionCommandArgs(defaults.kind, defaults.apply, false);
 		}
@@ -169,9 +169,9 @@ export class CodeActionCommandArgs {
 		}
 	}
 
-	private static getKindFromUser(arg: any, defaultKind: CodeActionKind) {
+	private static getKindFromUser(arg: any, defaultKind: ActionKind) {
 		return typeof arg.kind === 'string'
-			? new CodeActionKind(arg.kind)
+			? new ActionKind(arg.kind)
 			: defaultKind;
 	}
 
@@ -182,7 +182,7 @@ export class CodeActionCommandArgs {
 	}
 
 	private constructor(
-		public readonly kind: CodeActionKind,
+		public readonly kind: ActionKind,
 		public readonly apply: CodeActionAutoApply,
 		public readonly preferred: boolean,
 	) { }

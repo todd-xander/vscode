@@ -7,11 +7,11 @@ import { ResolvedKeybinding } from 'vs/base/common/keybindings';
 import { Lazy } from 'vs/base/common/lazy';
 import { CodeAction } from 'vs/editor/common/languages';
 import { codeActionCommandId, fixAllCommandId, organizeImportsCommandId, refactorCommandId, sourceActionCommandId } from 'vs/editor/contrib/codeAction/browser/codeAction';
-import { CodeActionAutoApply, CodeActionCommandArgs, CodeActionKind } from 'vs/editor/contrib/codeAction/common/types';
+import { CodeActionAutoApply, CodeActionCommandArgs, ActionKind } from 'vs/editor/contrib/codeAction/common/types';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 
 export interface ResolveCodeActionKeybinding {
-	readonly kind: CodeActionKind;
+	readonly kind: ActionKind;
 	readonly preferred: boolean;
 	readonly resolvedKeybinding: ResolvedKeybinding;
 }
@@ -38,15 +38,15 @@ export class CodeActionKeybindingResolver {
 				// Special case these commands since they come built-in with VS Code and don't use 'commandArgs'
 				let commandArgs = item.commandArgs;
 				if (item.command === organizeImportsCommandId) {
-					commandArgs = { kind: CodeActionKind.SourceOrganizeImports.value };
+					commandArgs = { kind: ActionKind.SourceOrganizeImports.value };
 				} else if (item.command === fixAllCommandId) {
-					commandArgs = { kind: CodeActionKind.SourceFixAll.value };
+					commandArgs = { kind: ActionKind.SourceFixAll.value };
 				}
 
 				return {
 					resolvedKeybinding: item.resolvedKeybinding!,
 					...CodeActionCommandArgs.fromUser(commandArgs, {
-						kind: CodeActionKind.None,
+						kind: ActionKind.None,
 						apply: CodeActionAutoApply.Never
 					})
 				};
@@ -68,7 +68,7 @@ export class CodeActionKeybindingResolver {
 		if (!action.kind) {
 			return undefined;
 		}
-		const kind = new CodeActionKind(action.kind);
+		const kind = new ActionKind(action.kind);
 
 		return candidates
 			.filter(candidate => candidate.kind.contains(kind))

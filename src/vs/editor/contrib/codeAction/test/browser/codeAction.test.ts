@@ -11,7 +11,7 @@ import { LanguageFeatureRegistry } from 'vs/editor/common/languageFeatureRegistr
 import * as languages from 'vs/editor/common/languages';
 import { TextModel } from 'vs/editor/common/model/textModel';
 import { getCodeActions } from 'vs/editor/contrib/codeAction/browser/codeAction';
-import { CodeActionItem, CodeActionKind, CodeActionTriggerSource } from 'vs/editor/contrib/codeAction/common/types';
+import { CodeActionItem, ActionKind, CodeActionTriggerSource } from 'vs/editor/contrib/codeAction/common/types';
 import { createTextModel } from 'vs/editor/test/common/testTextModel';
 import { IMarkerData, MarkerSeverity } from 'vs/platform/markers/common/markers';
 import { Progress } from 'vs/platform/progress/common/progress';
@@ -145,20 +145,20 @@ suite('CodeAction', () => {
 		disposables.add(registry.register('fooLang', provider));
 
 		{
-			const { validActions: actions } = await getCodeActions(registry, model, new Range(1, 1, 2, 1), { type: languages.CodeActionTriggerType.Auto, triggerAction: CodeActionTriggerSource.Default, filter: { include: new CodeActionKind('a') } }, Progress.None, CancellationToken.None);
+			const { validActions: actions } = await getCodeActions(registry, model, new Range(1, 1, 2, 1), { type: languages.CodeActionTriggerType.Auto, triggerAction: CodeActionTriggerSource.Default, filter: { include: new ActionKind('a') } }, Progress.None, CancellationToken.None);
 			assert.strictEqual(actions.length, 2);
 			assert.strictEqual(actions[0].action.title, 'a');
 			assert.strictEqual(actions[1].action.title, 'a.b');
 		}
 
 		{
-			const { validActions: actions } = await getCodeActions(registry, model, new Range(1, 1, 2, 1), { type: languages.CodeActionTriggerType.Auto, triggerAction: CodeActionTriggerSource.Default, filter: { include: new CodeActionKind('a.b') } }, Progress.None, CancellationToken.None);
+			const { validActions: actions } = await getCodeActions(registry, model, new Range(1, 1, 2, 1), { type: languages.CodeActionTriggerType.Auto, triggerAction: CodeActionTriggerSource.Default, filter: { include: new ActionKind('a.b') } }, Progress.None, CancellationToken.None);
 			assert.strictEqual(actions.length, 1);
 			assert.strictEqual(actions[0].action.title, 'a.b');
 		}
 
 		{
-			const { validActions: actions } = await getCodeActions(registry, model, new Range(1, 1, 2, 1), { type: languages.CodeActionTriggerType.Auto, triggerAction: CodeActionTriggerSource.Default, filter: { include: new CodeActionKind('a.b.c') } }, Progress.None, CancellationToken.None);
+			const { validActions: actions } = await getCodeActions(registry, model, new Range(1, 1, 2, 1), { type: languages.CodeActionTriggerType.Auto, triggerAction: CodeActionTriggerSource.Default, filter: { include: new ActionKind('a.b.c') } }, Progress.None, CancellationToken.None);
 			assert.strictEqual(actions.length, 0);
 		}
 	});
@@ -177,14 +177,14 @@ suite('CodeAction', () => {
 
 		disposables.add(registry.register('fooLang', provider));
 
-		const { validActions: actions } = await getCodeActions(registry, model, new Range(1, 1, 2, 1), { type: languages.CodeActionTriggerType.Auto, triggerAction: CodeActionTriggerSource.Default, filter: { include: new CodeActionKind('a') } }, Progress.None, CancellationToken.None);
+		const { validActions: actions } = await getCodeActions(registry, model, new Range(1, 1, 2, 1), { type: languages.CodeActionTriggerType.Auto, triggerAction: CodeActionTriggerSource.Default, filter: { include: new ActionKind('a') } }, Progress.None, CancellationToken.None);
 		assert.strictEqual(actions.length, 1);
 		assert.strictEqual(actions[0].action.title, 'a');
 	});
 
 	test('getCodeActions should not return source code action by default', async () => {
 		const provider = staticCodeActionProvider(
-			{ title: 'a', kind: CodeActionKind.Source.value },
+			{ title: 'a', kind: ActionKind.Source.value },
 			{ title: 'b', kind: 'b' }
 		);
 
@@ -197,7 +197,7 @@ suite('CodeAction', () => {
 		}
 
 		{
-			const { validActions: actions } = await getCodeActions(registry, model, new Range(1, 1, 2, 1), { type: languages.CodeActionTriggerType.Auto, triggerAction: CodeActionTriggerSource.Default, filter: { include: CodeActionKind.Source, includeSourceActions: true } }, Progress.None, CancellationToken.None);
+			const { validActions: actions } = await getCodeActions(registry, model, new Range(1, 1, 2, 1), { type: languages.CodeActionTriggerType.Auto, triggerAction: CodeActionTriggerSource.Default, filter: { include: ActionKind.Source, includeSourceActions: true } }, Progress.None, CancellationToken.None);
 			assert.strictEqual(actions.length, 1);
 			assert.strictEqual(actions[0].action.title, 'a');
 		}
@@ -205,8 +205,8 @@ suite('CodeAction', () => {
 
 	test('getCodeActions should support filtering out some requested source code actions #84602', async () => {
 		const provider = staticCodeActionProvider(
-			{ title: 'a', kind: CodeActionKind.Source.value },
-			{ title: 'b', kind: CodeActionKind.Source.append('test').value },
+			{ title: 'a', kind: ActionKind.Source.value },
+			{ title: 'b', kind: ActionKind.Source.append('test').value },
 			{ title: 'c', kind: 'c' }
 		);
 
@@ -215,8 +215,8 @@ suite('CodeAction', () => {
 		{
 			const { validActions: actions } = await getCodeActions(registry, model, new Range(1, 1, 2, 1), {
 				type: languages.CodeActionTriggerType.Auto, triggerAction: CodeActionTriggerSource.SourceAction, filter: {
-					include: CodeActionKind.Source.append('test'),
-					excludes: [CodeActionKind.Source],
+					include: ActionKind.Source.append('test'),
+					excludes: [ActionKind.Source],
 					includeSourceActions: true,
 				}
 			}, Progress.None, CancellationToken.None);
@@ -226,8 +226,8 @@ suite('CodeAction', () => {
 	});
 
 	test('getCodeActions no invoke a provider that has been excluded #84602', async () => {
-		const baseType = CodeActionKind.Refactor;
-		const subType = CodeActionKind.Refactor.append('sub');
+		const baseType = ActionKind.Refactor;
+		const subType = ActionKind.Refactor.append('sub');
 
 		disposables.add(registry.register('fooLang', staticCodeActionProvider(
 			{ title: 'a', kind: baseType.value }
@@ -270,7 +270,7 @@ suite('CodeAction', () => {
 				return { actions: [], dispose: () => { } };
 			}
 
-			providedCodeActionKinds = [CodeActionKind.Refactor.value];
+			providedCodeActionKinds = [ActionKind.Refactor.value];
 		};
 
 		disposables.add(registry.register('fooLang', provider));
@@ -278,7 +278,7 @@ suite('CodeAction', () => {
 		const { validActions: actions } = await getCodeActions(registry, model, new Range(1, 1, 2, 1), {
 			type: languages.CodeActionTriggerType.Auto, triggerAction: CodeActionTriggerSource.Refactor,
 			filter: {
-				include: CodeActionKind.QuickFix
+				include: ActionKind.QuickFix
 			}
 		}, Progress.None, CancellationToken.None);
 		assert.strictEqual(actions.length, 0);

@@ -10,7 +10,7 @@ import { Selection } from 'vs/editor/common/core/selection';
 import * as languages from 'vs/editor/common/languages';
 import { ITextModel } from 'vs/editor/common/model';
 import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures';
-import { CodeActionKind } from 'vs/editor/contrib/codeAction/common/types';
+import { ActionKind } from 'vs/editor/contrib/codeAction/common/types';
 import { ContextKeyExpr, ContextKeyExpression, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
 import { DocumentationExtensionPoint } from 'vs/workbench/contrib/codeActions/common/documentationExtensionPoint';
@@ -68,8 +68,8 @@ export class CodeActionDocumentationContribution extends Disposable implements I
 	}
 
 	public _getAdditionalMenuItems(context: languages.CodeActionContext, actions: readonly languages.CodeAction[]): languages.Command[] {
-		if (context.only !== CodeActionKind.Refactor.value) {
-			if (!actions.some(action => action.kind && CodeActionKind.Refactor.contains(new CodeActionKind(action.kind)))) {
+		if (context.only !== ActionKind.Refactor.value) {
+			if (!actions.some(action => action.kind && ActionKind.Refactor.contains(new ActionKind(action.kind)))) {
 				return [];
 			}
 		}

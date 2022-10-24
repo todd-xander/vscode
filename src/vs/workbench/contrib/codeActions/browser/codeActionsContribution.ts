@@ -8,7 +8,7 @@ import { IJSONSchema, IJSONSchemaMap } from 'vs/base/common/jsonSchema';
 import { Disposable } from 'vs/base/common/lifecycle';
 import { editorConfigurationBaseNode } from 'vs/editor/common/config/editorConfigurationSchema';
 import { codeActionCommandId, refactorCommandId, sourceActionCommandId } from 'vs/editor/contrib/codeAction/browser/codeAction';
-import { CodeActionKind } from 'vs/editor/contrib/codeAction/common/types';
+import { ActionKind } from 'vs/editor/contrib/codeAction/common/types';
 import * as nls from 'vs/nls';
 import { ConfigurationScope, Extensions, IConfigurationNode, IConfigurationPropertySchema, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
@@ -88,12 +88,12 @@ export class CodeActionsContribution extends Disposable implements IWorkbenchCon
 	}
 
 	private getSourceActions(contributions: readonly CodeActionsExtensionPoint[]) {
-		const defaultKinds = Object.keys(codeActionsOnSaveDefaultProperties).map(value => new CodeActionKind(value));
+		const defaultKinds = Object.keys(codeActionsOnSaveDefaultProperties).map(value => new ActionKind(value));
 		const sourceActions = new Map<string, { readonly title: string }>();
 		for (const contribution of contributions) {
 			for (const action of contribution.actions) {
-				const kind = new CodeActionKind(action.kind);
-				if (CodeActionKind.Source.contains(kind)
+				const kind = new ActionKind(action.kind);
+				if (ActionKind.Source.contains(kind)
 					// Exclude any we already included by default
 					&& !defaultKinds.some(defaultKind => defaultKind.contains(kind))
 				) {
@@ -133,12 +133,12 @@ export class CodeActionsContribution extends Disposable implements IWorkbenchCon
 			};
 		};
 
-		const getActions = (ofKind: CodeActionKind): ContributedCodeAction[] => {
+		const getActions = (ofKind: ActionKind): ContributedCodeAction[] => {
 			const allActions = this._contributedCodeActions.map(desc => desc.actions).flat();
 
 			const out = new Map<string, ContributedCodeAction>();
 			for (const action of allActions) {
-				if (!out.has(action.kind) && ofKind.contains(new CodeActionKind(action.kind))) {
+				if (!out.has(action.kind) && ofKind.contains(new ActionKind(action.kind))) {
 					out.set(action.kind, action);
 				}
 			}
@@ -146,9 +146,9 @@ export class CodeActionsContribution extends Disposable implements IWorkbenchCon
 		};
 
 		return [
-			conditionalSchema(codeActionCommandId, getActions(CodeActionKind.Empty)),
-			conditionalSchema(refactorCommandId, getActions(CodeActionKind.Refactor)),
-			conditionalSchema(sourceActionCommandId, getActions(CodeActionKind.Source)),
+			conditionalSchema(codeActionCommandId, getActions(ActionKind.Empty)),
+			conditionalSchema(refactorCommandId, getActions(ActionKind.Refactor)),
+			conditionalSchema(sourceActionCommandId, getActions(ActionKind.Source)),
 		];
 	}
 }
