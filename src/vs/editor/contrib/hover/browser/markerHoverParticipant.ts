@@ -17,7 +17,7 @@ import { CodeActionTriggerType } from 'vs/editor/common/languages';
 import { IMarkerDecorationsService } from 'vs/editor/common/services/markerDecorations';
 import { getCodeActions } from 'vs/editor/contrib/codeAction/browser/codeAction';
 import { QuickFixAction, CodeActionController } from 'vs/editor/contrib/codeAction/browser/codeActionCommands';
-import { ActionKind, CodeActionSet, CodeActionTrigger, CodeActionTriggerSource } from 'vs/editor/contrib/codeAction/common/types';
+import { CodeActionKind, CodeActionSet, CodeActionTrigger, CodeActionTriggerSource } from 'vs/editor/contrib/codeAction/common/types';
 import { MarkerController, NextMarkerAction } from 'vs/editor/contrib/gotoError/browser/gotoError';
 import { HoverAnchor, HoverAnchorType, IEditorHoverParticipant, IEditorHoverRenderContext, IHoverPart } from 'vs/editor/contrib/hover/browser/hoverTypes';
 import * as nls from 'vs/nls';
@@ -50,7 +50,7 @@ export class MarkerHover implements IHoverPart {
 
 const markerCodeActionTrigger: CodeActionTrigger = {
 	type: CodeActionTriggerType.Invoke,
-	filter: { include: ActionKind.QuickFix },
+	filter: { include: CodeActionKind.QuickFix },
 	triggerAction: CodeActionTriggerSource.QuickFixHover
 };
 

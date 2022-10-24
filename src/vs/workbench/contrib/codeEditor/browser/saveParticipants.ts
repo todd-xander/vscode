@@ -15,7 +15,7 @@ import { Selection } from 'vs/editor/common/core/selection';
 import { ITextModel } from 'vs/editor/common/model';
 import { CodeActionTriggerType, CodeActionProvider } from 'vs/editor/common/languages';
 import { applyCodeAction, ApplyCodeActionReason, getCodeActions } from 'vs/editor/contrib/codeAction/browser/codeAction';
-import { ActionKind, CodeActionTriggerSource } from 'vs/editor/contrib/codeAction/common/types';
+import { CodeActionKind, CodeActionTriggerSource } from 'vs/editor/contrib/codeAction/common/types';
 import { formatDocumentRangesWithSelectedProvider, formatDocumentWithSelectedProvider, FormattingMode } from 'vs/editor/contrib/format/browser/format';
 import { SnippetController2 } from 'vs/editor/contrib/snippet/browser/snippetController2';
 import { localize } from 'vs/nls';
@@ -298,13 +298,13 @@ class CodeActionOnSaveParticipant implements ITextFileSaveParticipant {
 
 		if (!Array.isArray(setting)) {
 			codeActionsOnSave.sort((a, b) => {
-				if (ActionKind.SourceFixAll.contains(a)) {
-					if (ActionKind.SourceFixAll.contains(b)) {
+				if (CodeActionKind.SourceFixAll.contains(a)) {
+					if (CodeActionKind.SourceFixAll.contains(b)) {
 						return 0;
 					}
 					return -1;
 				}
-				if (ActionKind.SourceFixAll.contains(b)) {
+				if (CodeActionKind.SourceFixAll.contains(b)) {
 					return 1;
 				}
 				return 0;
@@ -319,14 +319,14 @@ class CodeActionOnSaveParticipant implements ITextFileSaveParticipant {
 			? []
 			: Object.keys(setting)
 				.filter(x => setting[x] === false)
-				.map(x => new ActionKind(x));
+				.map(x => new CodeActionKind(x));
 
 		progress.report({ message: localize('codeaction', "Quick Fixes") });
 		await this.applyOnSaveActions(textEditorModel, codeActionsOnSave, excludedActions, progress, token);
 	}
 
-	private createCodeActionsOnSave(settingItems: readonly string[]): ActionKind[] {
-		const kinds = settingItems.map(x => new ActionKind(x));
+	private createCodeActionsOnSave(settingItems: readonly string[]): CodeActionKind[] {
+		const kinds = settingItems.map(x => new CodeActionKind(x));
 
 		// Remove subsets
 		return kinds.filter(kind => {
@@ -334,7 +334,7 @@ class CodeActionOnSaveParticipant implements ITextFileSaveParticipant {
 		});
 	}
 
-	private async applyOnSaveActions(model: ITextModel, codeActionsOnSave: readonly ActionKind[], excludes: readonly ActionKind[], progress: IProgress<IProgressStep>, token: CancellationToken): Promise<void> {
+	private async applyOnSaveActions(model: ITextModel, codeActionsOnSave: readonly CodeActionKind[], excludes: readonly CodeActionKind[], progress: IProgress<IProgressStep>, token: CancellationToken): Promise<void> {
 
 		const getActionProgress = new class implements IProgress<CodeActionProvider> {
 			private _names = new Set<string>();
@@ -371,7 +371,7 @@ class CodeActionOnSaveParticipant implements ITextFileSaveParticipant {
 		}
 	}
 
-	private getActionsToRun(model: ITextModel, codeActionKind: ActionKind, excludes: readonly ActionKind[], progress: IProgress<CodeActionProvider>, token: CancellationToken) {
+	private getActionsToRun(model: ITextModel, codeActionKind: CodeActionKind, excludes: readonly CodeActionKind[], progress: IProgress<CodeActionProvider>, token: CancellationToken) {
 		return getCodeActions(this.languageFeaturesService.codeActionProvider, model, model.getFullModelRange(), {
 			type: CodeActionTriggerType.Auto,
 			triggerAction: CodeActionTriggerSource.OnSave,
